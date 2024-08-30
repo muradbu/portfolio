@@ -1,0 +1,36 @@
+---
+import {
+  type CollectionEntry,
+  getCollection,
+  type ContentCollectionKey,
+} from "astro:content";
+import BlogPost from "src/layout/BlogPost.astro";
+import { collections } from "src/content/config";
+
+export async function getStaticPaths() {
+  const allCollections = Object.keys(collections);
+
+  const paths = await Promise.all(
+    allCollections.map(async (collection) => {
+      const entries = await getCollection(collection as ContentCollectionKey);
+      return entries.map((entry) => ({
+        params: { collection, slug: entry.slug },
+        props: { entry },
+      }));
+    })
+  );
+
+  return paths.flat();
+}
+
+type Props = {
+  entry: CollectionEntry<ContentCollectionKey>;
+};
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<BlogPost {...entry.data}>
+  <Content />
+</BlogPost>
